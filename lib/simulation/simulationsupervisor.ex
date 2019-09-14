@@ -7,6 +7,12 @@ defmodule Infosender.Simulation.Supervisor do
 
   @impl true
   def init(_init_arg) do
+    Tortoise.Supervisor.start_child(
+      Infosender.Connection.Supervisor,
+      client_id: Sine,
+      server: {Tortoise.Transport.Tcp, host: 'localhost', port: 1883},
+      handler: {Infosender.Infohandler, []}
+    )
     children = [
       {Infosender.Simulation.Worker, %{topic: "foo/bar", numerator: 1, multiplicator: 4}}
     ]
