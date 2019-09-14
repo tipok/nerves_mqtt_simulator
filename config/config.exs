@@ -26,7 +26,13 @@ config :shoehorn,
 # See https://hexdocs.pm/ring_logger/readme.html for more information on
 # configuring ring_logger.
 
-config :logger, backends: [RingLogger, :console]
+logger_backends = case Mix.env do
+  :prod -> [RingLogger]
+  _ -> [RingLogger, :console]
+end
+
+config :logger, backends: logger_backends
+
 
 config :nerves_time, :servers, [
   "0.pool.ntp.org",
