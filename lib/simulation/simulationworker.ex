@@ -10,6 +10,12 @@ defmodule Infosender.Simulation.Worker do
     Process.send_after(self(), :work, 1_000)
   end
 
+  defp sinus(numerator, multiplicator) do
+    current_angle = :math.pi() * (numerator / 4)
+    current_value = :math.sin(current_angle) * multiplicator
+    <<current_value::float-64>>
+  end
+
   @impl true
   def init(state=%{topic: topic, multiplicator: multiplicator}) do
     debug = Map.get(state, :debug, false)
@@ -24,14 +30,13 @@ defmodule Infosender.Simulation.Worker do
 
   @impl true
   def handle_info(:work, state=%{topic: topic, numerator: numerator, multiplicator: multiplicator}) do
-    current_angle = :math.pi() * (numerator / 4)
-    current_value = :math.sin(current_angle) * multiplicator
-    payload = <<current_value::float-64>>
+    payload = sinus(numerator, multiplicator)
     Tortoise.publish(Sine, topic, payload)
     schedule_work()
     {:noreply, Map.put(state, :numerator, numerator+1)}
   end
 
+  @impl true
   def handle_info({{Tortoise, Sine}, _, status}, state=%{topic: topic}) do
     if status != :ok do
       Logger.error("Could not subscribe to: #{topic}")
