@@ -10,8 +10,9 @@ config :infosender,
   simulation: true
 
 config :infosender, Infosender.Simulation, [
-    %{topic: "foo/bar", max: 4, debug: true},
-    %{topic: "bla/blub", max: 8, debug: true},
+    %{topic: "abc/cos", func: :cos, max: 4, debug: true},
+    %{topic: "abc/sin", func: :sin, max: 4, debug: true},
+    %{topic: "abc/step", func: :step, max: 4, debug: true},
   ]
 
 # Customize non-Elixir parts of the firmware. See
