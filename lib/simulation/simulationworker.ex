@@ -10,14 +10,28 @@ defmodule Infosender.Simulation.Worker do
     Process.send_after(self(), :work, 1_000)
   end
 
-  defp sinus(numerator, multiplicator) do
+  defp sinus(numerator, max) do
     current_angle = :math.pi() * (numerator / 4)
-    current_value = :math.sin(current_angle) * multiplicator
-    <<current_value::float-64>>
+    current_value = :math.sin(current_angle) * max
+    numerator = case numerator == max do
+      true -> 1
+      false -> numerator + 1
+    end
+    {numerator, <<current_value::float-64>>}
+  end
+
+  defp cosinus(numerator, max) do
+    current_angle = :math.pi() * (numerator / 4)
+    current_value = :math.cos(current_angle) * max
+    numerator = case numerator == max do
+      true -> 1
+      false -> numerator + 1
+    end
+    {numerator, <<current_value::float-64>>}
   end
 
   @impl true
-  def init(state=%{topic: topic, multiplicator: multiplicator}) do
+  def init(state=%{topic: topic, max: max}) do
     debug = Map.get(state, :debug, false)
     Logger.info("Starting simulator for topic '#{topic}' debug: #{debug}")
     if debug do
@@ -25,15 +39,15 @@ defmodule Infosender.Simulation.Worker do
     end
 
     schedule_work()
-    {:ok, %{topic: topic, numerator: 1, multiplicator: multiplicator}}
+    {:ok, %{topic: topic, numerator: 1, max: max}}
   end
 
   @impl true
-  def handle_info(:work, state=%{topic: topic, numerator: numerator, multiplicator: multiplicator}) do
-    payload = sinus(numerator, multiplicator)
+  def handle_info(:work, state=%{topic: topic, numerator: numerator, max: max}) do
+    {numerator, payload} = sinus(numerator, max)
     Tortoise.publish(Sine, topic, payload)
     schedule_work()
-    {:noreply, Map.put(state, :numerator, numerator+1)}
+    {:noreply, Map.put(state, :numerator, numerator)}
   end
 
   @impl true
