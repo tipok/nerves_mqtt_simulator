@@ -15,7 +15,7 @@ defmodule Infosender.Application do
           name: Infosender.Connection.Supervisor,
           strategy: :one_for_one
         ]},
-        {Infosender, %{topic: "foo/bar", numerator: 1, multiplicator: 4}},
+        {Infosender.Simulation.Supervisor, []},
       ] ++ children(target())
 
     Supervisor.start_link(children, opts)

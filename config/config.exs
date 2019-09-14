@@ -5,7 +5,9 @@
 # is restricted to this project.
 use Mix.Config
 
-config :infosender, target: Mix.target()
+config :infosender,
+  target: Mix.target(),
+  simulation: true
 
 # Customize non-Elixir parts of the firmware. See
 # https://hexdocs.pm/nerves/advanced-configuration.html for details.
