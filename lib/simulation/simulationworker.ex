@@ -2,8 +2,8 @@ defmodule Infosender.Simulation.Worker do
   use GenServer
   require Logger
 
-  def start_link(default) do
-    GenServer.start_link(__MODULE__, default, name: __MODULE__)
+  def start_link([id: id, config: config]) do
+    GenServer.start_link(__MODULE__, config, name: id)
   end
 
   defp schedule_work() do
