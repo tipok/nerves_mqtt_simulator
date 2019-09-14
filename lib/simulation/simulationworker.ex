@@ -2,7 +2,7 @@ defmodule Infosender.Simulation.Worker do
   use GenServer
   require Logger
 
-  def start_link(default \\ %{numerator: 1, multiplicator: 4}) do
+  def start_link(default) do
     GenServer.start_link(__MODULE__, default, name: __MODULE__)
   end
 
@@ -11,16 +11,15 @@ defmodule Infosender.Simulation.Worker do
   end
 
   @impl true
-  def init(state=%{topic: topic}) do
-    Tortoise.Supervisor.start_child(
-      Infosender.Connection.Supervisor,
-      client_id: Sine,
-      server: {Tortoise.Transport.Tcp, host: 'localhost', port: 1883},
-      handler: {Infosender.Infohandler, []}
-    )
-    Tortoise.Connection.subscribe(Sine, topic, [qos: 0])
+  def init(state=%{topic: topic, multiplicator: multiplicator}) do
+    debug = Map.get(state, :debug, false)
+    Logger.info("Starting simulator for topic '#{topic}' debug: #{debug}")
+    if debug do
+      Tortoise.Connection.subscribe(Sine, topic, [qos: 0])
+    end
+
     schedule_work()
-    {:ok, state}
+    {:ok, %{topic: topic, numerator: 1, multiplicator: multiplicator}}
   end
 
   @impl true
