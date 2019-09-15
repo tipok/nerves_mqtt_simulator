@@ -6,8 +6,8 @@ defmodule Infosender.Simulation.Worker do
     GenServer.start_link(__MODULE__, config, name: id)
   end
 
-  defp schedule_work() do
-    Process.send_after(self(), :work, 1_000)
+  defp schedule_work(interval) do
+    Process.send_after(self(), :work, interval)
   end
 
   defp sinus(numerator, max) do
@@ -47,6 +47,7 @@ defmodule Infosender.Simulation.Worker do
   @impl true
   def init(state=%{client_id: client_id, topic: topic, func: func, max: max}) do
     debug = Map.get(state, :debug, false)
+    interval = Map.get(state, :interval, 1_000)
     Logger.info("Starting simulator for topic '#{topic}' debug: #{debug}")
     if debug do
       Tortoise.Connection.subscribe(client_id, topic, [qos: 0])
@@ -59,15 +60,15 @@ defmodule Infosender.Simulation.Worker do
       _ -> raise ArgumentError, message: ":func #{inspect(func)} is not supported"
     end
 
-    schedule_work()
-    {:ok, %{client_id: client_id, topic: topic, func: f, numerator: 1, max: max}}
+    schedule_work(interval)
+    {:ok, %{client_id: client_id, interval: interval, topic: topic, func: f, numerator: 1, max: max}}
   end
 
   @impl true
-  def handle_info(:work, state=%{client_id: client_id, topic: topic, func: func, numerator: numerator, max: max}) do
+  def handle_info(:work, state=%{client_id: client_id, interval: interval, topic: topic, func: func, numerator: numerator, max: max}) do
     {numerator, payload} = func.(numerator, max)
     Tortoise.publish(client_id, topic, payload)
-    schedule_work()
+    schedule_work(interval)
     {:noreply, Map.put(state, :numerator, numerator)}
   end
 
