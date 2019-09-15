@@ -8,8 +8,10 @@ use Mix.Config
 config :infosender,
   target: Mix.target(),
   simulation: true,
+  # if ssl is needed add ssl atom to the keywords
+  # if using certi files ssl: [cacertfile: "a", keyfile: "b", certfile: "c"]
+  # if verification should be disabled ssl: [verify: :verify_none]
   mqtt: [client_id: "simulator", host: "localhost", port: 1883]
-
 
 
 config :infosender, Infosender.Simulation, [
