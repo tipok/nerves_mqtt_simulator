@@ -45,11 +45,11 @@ defmodule Infosender.Simulation.Worker do
   end
 
   @impl true
-  def init(state=%{topic: topic, func: func, max: max}) do
+  def init(state=%{client_id: client_id, topic: topic, func: func, max: max}) do
     debug = Map.get(state, :debug, false)
     Logger.info("Starting simulator for topic '#{topic}' debug: #{debug}")
     if debug do
-      Tortoise.Connection.subscribe(Sine, topic, [qos: 0])
+      Tortoise.Connection.subscribe(client_id, topic, [qos: 0])
     end
 
     f = case func do
@@ -60,19 +60,19 @@ defmodule Infosender.Simulation.Worker do
     end
 
     schedule_work()
-    {:ok, %{topic: topic, func: f, numerator: 1, max: max}}
+    {:ok, %{client_id: client_id, topic: topic, func: f, numerator: 1, max: max}}
   end
 
   @impl true
-  def handle_info(:work, state=%{topic: topic, func: func, numerator: numerator, max: max}) do
+  def handle_info(:work, state=%{client_id: client_id, topic: topic, func: func, numerator: numerator, max: max}) do
     {numerator, payload} = func.(numerator, max)
-    Tortoise.publish(Sine, topic, payload)
+    Tortoise.publish(client_id, topic, payload)
     schedule_work()
     {:noreply, Map.put(state, :numerator, numerator)}
   end
 
   @impl true
-  def handle_info({{Tortoise, Sine}, _, status}, state=%{topic: topic}) do
+  def handle_info({{Tortoise, _}, _, status}, state=%{topic: topic}) do
     if status != :ok do
       Logger.error("Could not subscribe to: #{topic}")
     end

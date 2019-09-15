@@ -7,7 +7,10 @@ use Mix.Config
 
 config :infosender,
   target: Mix.target(),
-  simulation: true
+  simulation: true,
+  mqtt: [client_id: "simulator", host: "localhost", port: 1883]
+
+
 
 config :infosender, Infosender.Simulation, [
     %{topic: "abc/cos", func: :cos, max: 4, debug: true},
